@@ -95,3 +95,51 @@ class Block(nn.Module):
         out = self.relu(out)
 
         return out
+
+
+# create a descriminator model
+class Discriminator(nn.Module):
+    def __init__(self) -> None:
+        super(Discriminator, self).__init__()
+        self.conv1      = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
+        self.relu       = nn.ReLU(inplace=True)
+        self.conv2      = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
+        self.bn1        = nn.BatchNorm2d(64)
+        self.conv3      = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.bn2        = nn.BatchNorm2d(128)
+        self.conv4      = nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1)
+        self.bn3        = nn.BatchNorm2d(128)
+        self.conv5      = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
+        self.bn4        = nn.BatchNorm2d(256)
+        self.conv6      = nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1)
+        self.bn5        = nn.BatchNorm2d(256)
+        self.conv7      = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
+        self.avgpool    = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc         = nn.Linear(512, 1)
+        self.sigmoid    = nn.Sigmoid()
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = self.conv3(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.conv4(out)
+        out = self.bn3(out)
+        out = self.relu(out)
+        out = self.conv5(out)
+        out = self.bn4(out)
+        out = self.relu(out)
+        out = self.conv6(out)
+        out = self.bn5(out)
+        out = self.relu(out)
+        out = self.conv7(out)
+        out = self.avgpool(out)
+        out = torch.flatten(out, 1)
+        out = self.fc(out)
+        out = self.sigmoid(out)
+
+        return out
