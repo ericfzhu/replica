@@ -1,4 +1,4 @@
-from model import ResNeXt
+from model import ResNeXt, Discriminator
 from skimage.metrics import mean_squared_error as mse, structural_similarity as ssim
 import random
 import torch
