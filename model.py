@@ -8,14 +8,14 @@ class ResNeXt(nn.Module):
 
         self.conv1      = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1        = nn.BatchNorm2d(64)
-        self.relu       = nn.ReLU(inplace=True)
+        self.relu       = nn.LeakyReLU(inplace=True)
         self.maxpool    = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1     = self._layer(planes=64, blocks=3)
         self.layer2     = self._layer(planes=128, blocks=4, stride=2)
         self.layer3     = self._layer(planes=256, blocks=6, stride=2)
         self.layer4     = self._layer(planes=512, blocks=3, stride=2)
         self.avgpool    = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc         = nn.Linear(512 * Block.expansion, 1000)
+        self.fc         = nn.Linear(512 * 4, 1000)
 
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
@@ -25,9 +25,9 @@ class ResNeXt(nn.Module):
                 nn.init.constant_(module.bias, 0)
 
 
-    def _layer(self, planes, blocks, stride):
+    def _layer(self, planes: int, blocks: int, stride: int = 1) -> nn.Sequential:
         downsample = nn.Sequential(
-            nn.Conv2d(in_channels=self.inplanes, out_channels=planes * Block.expansion, kernel_size=1, stride=stride, bias=False),
+            nn.Conv2d(in_channels=self.inplanes, out_channels=planes * 4, kernel_size=1, stride=stride, bias=False),
             nn.BatchNorm2d(planes * 4)
         )
         
@@ -70,7 +70,7 @@ class Block(nn.Module):
         self.bn2        = nn.BatchNorm2d(width)
         self.conv3      = nn.Conv2d(width, planes * 4, kernel_size=1, bias=False)
         self.bn3        = nn.BatchNorm2d(planes * 4)
-        self.relu       = nn.ReLU(inplace=True)
+        self.relu       = nn.LeakyReLU(inplace=True)
         self.downsample = downsample
         self.stride     = stride
 
@@ -102,7 +102,7 @@ class Discriminator(nn.Module):
     def __init__(self) -> None:
         super(Discriminator, self).__init__()
         self.conv1      = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.relu       = nn.ReLU(inplace=True)
+        self.relu       = nn.LeakyReLU(inplace=True)
         self.conv2      = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1)
         self.bn1        = nn.BatchNorm2d(64)
         self.conv3      = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)

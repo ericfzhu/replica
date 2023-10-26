@@ -16,16 +16,11 @@ test_dslr_dir = Path('data/iphone/test_data/patches/canon')
 
 
 def get_dataloaders():
-    num_train_images = len([name for name in os.listdir(train_original_dir) if os.path.isfile(os.path.join(train_original_dir, name))])
-    num_test_images = len([name for name in os.listdir(test_original_dir) if os.path.isfile(os.path.join(test_original_dir, name))])
-    image_size = 100 * 100 * 3
+    train_indices = np.arange(0, len(os.listdir(train_original_dir)))
+    test_indices = np.arange(0, len(os.listdir(test_original_dir)))
 
-    train_indices = np.arange(0, num_train_images)
-    test_indices = np.arange(0, num_test_images)
-
-    train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices, image_size)
-    test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices, image_size)
-
+    train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices)
+    test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices)
 
     train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
@@ -36,11 +31,10 @@ def get_dataloaders():
 
 
 class CustomImageDataset(Dataset):
-    def __init__(self, phone_dir, dslr_dir, indices, image_size):
+    def __init__(self, phone_dir, dslr_dir, indices):
         self.phone_dir = phone_dir
         self.dslr_dir = dslr_dir
         self.indices = indices
-        self.image_size = image_size
 
     def __len__(self):
         return len(self.indices)
@@ -48,10 +42,16 @@ class CustomImageDataset(Dataset):
     def __getitem__(self, idx):
         img_index = self.indices[idx]
 
+        # Load and transform phone image
         phone_img = Image.open(Path(self.phone_dir, f"{img_index}.jpg"))
-        phone_img = torch.from_numpy(np.asarray(phone_img)).float().view(1, self.image_size) / 255.0
+        phone_np = np.asarray(phone_img).copy()
+        phone_np = phone_np.transpose((2, 0, 1))  # C, H, W
+        phone_tensor = torch.from_numpy(phone_np).float() / 255.0  # Normalize
 
+        # Load and transform DSLR image
         dslr_img = Image.open(Path(self.dslr_dir, f"{img_index}.jpg"))
-        dslr_img = torch.from_numpy(np.asarray(dslr_img)).float().view(1, self.image_size) / 255.0
+        dslr_np = np.asarray(dslr_img).copy()
+        dslr_np = dslr_np.transpose((2, 0, 1))  # C, H, W
+        dslr_tensor = torch.from_numpy(dslr_np).float() / 255.0  # Normalize
 
-        return phone_img, dslr_img
+        return phone_tensor, dslr_tensor
