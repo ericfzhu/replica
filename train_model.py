@@ -11,7 +11,7 @@ torch.manual_seed(manual_seed)
 torch.use_deterministic_algorithms(True)
 
 # Epochs
-epochs = 20000
+num_epochs = 20000
 
 # Initialize models
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -22,7 +22,7 @@ discriminator = Discriminator().to(device)
 train_dataloader, test_dataloader = get_dataloaders()
 
 # Training loop
-for i in range(epochs):
+for i in range(num_epochs):
     for phone_imgs, dslr_imgs in train_dataloader:
         discriminator.zero_grad()
         phone_imgs, dslr_imgs = phone_imgs.to(device), dslr_imgs.to(device)
