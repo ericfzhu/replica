@@ -14,8 +14,12 @@ class ResNeXt(nn.Module):
         self.layer2     = self._layer(planes=128, blocks=4, stride=2)
         self.layer3     = self._layer(planes=256, blocks=6, stride=2)
         self.layer4     = self._layer(planes=512, blocks=3, stride=2)
-        self.avgpool    = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc         = nn.Linear(512 * 4, 1000)
+        self.deconv1    = nn.ConvTranspose2d(2048, 1024, kernel_size=4, stride=2)
+        self.deconv2    = nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2)
+        self.deconv3    = nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2)
+        self.deconv4    = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2)
+        self.deconv5    = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=1)
+        self.deconv6    = nn.ConvTranspose2d(64, 3, kernel_size=4, stride=1)
 
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
@@ -40,6 +44,7 @@ class ResNeXt(nn.Module):
         
         return nn.Sequential(*layers)
     
+    
     def forward(self, x):
         out = self.conv1(x) # 7x7, 64, stride=2
         out = self.bn1(out)
@@ -51,9 +56,12 @@ class ResNeXt(nn.Module):
         out = self.layer3(out) # 3x3, 1024, stride=2
         out = self.layer4(out) # 3x3, 2048, stride=2
 
-        out = self.avgpool(out) # 1x1, 2048
-        out = torch.flatten(out, 1)
-        out = self.fc(out)
+        out = self.deconv1(out)
+        out = self.deconv2(out)
+        out = self.deconv3(out)
+        out = self.deconv4(out)
+        out = self.deconv5(out)
+        out = self.deconv6(out)
 
         return out
     
