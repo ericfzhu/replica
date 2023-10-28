@@ -16,7 +16,7 @@ test_dslr_dir = Path('data/iphone/test_data/patches/canon')
 
 IMAGE_SIZE = 100 * 100 * 3
 
-def get_dataloaders():
+def get_dataloaders() -> (DataLoader, DataLoader):
     train_indices = np.arange(0, len(os.listdir(train_original_dir)))
     test_indices = np.arange(0, len(os.listdir(test_original_dir)))
 
@@ -27,8 +27,6 @@ def get_dataloaders():
     test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     return train_dataloader, test_dataloader
-
-
 
 
 class CustomImageDataset(Dataset):
