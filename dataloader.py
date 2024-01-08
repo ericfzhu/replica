@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Union
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import datasets
@@ -16,7 +17,7 @@ test_dslr_dir = Path('data/iphone/test_data/patches/canon')
 
 IMAGE_SIZE = 100 * 100 * 3
 
-def get_dataloaders() -> (DataLoader, DataLoader):
+def get_dataloaders() -> Union[DataLoader, DataLoader]:
     train_indices = np.arange(0, len(os.listdir(train_original_dir)))
     test_indices = np.arange(0, len(os.listdir(test_original_dir)))
 

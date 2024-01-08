@@ -9,6 +9,7 @@ torchvision = "*"
 torchaudio = "*"
 scikit-image = "*"
 matplotlib = "*"
+mlx = "*"
 
 [dev-packages]
 
