@@ -17,15 +17,15 @@ test_dslr_dir = Path('data/iphone/test_data/patches/canon')
 
 IMAGE_SIZE = 100 * 100 * 3
 
-def get_dataloaders() -> Union[DataLoader, DataLoader]:
-    train_indices = np.arange(0, len(os.listdir(train_original_dir)))
+def get_dataloaders(train_size: int) -> Union[DataLoader, DataLoader]:
+    train_indices = np.random.choice(np.arange(0, len(os.listdir(train_original_dir))), train_size, replace=False)
     test_indices = np.arange(0, len(os.listdir(test_original_dir)))
 
     train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices, IMAGE_SIZE)
     test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices, IMAGE_SIZE)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True, num_workers=2)
+    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=True, num_workers=2)
 
     return train_dataloader, test_dataloader
 
