@@ -29,15 +29,15 @@ class RandomSampler(Sampler):
     def __len__(self):
         return self.train_size
 
-def get_dataloaders() -> Union[DataLoader, DataLoader]:
+def get_dataloaders(batch_size: int, sample_size: int = 5000) -> Union[DataLoader, DataLoader]:
     train_indices = np.arange(0, len(os.listdir(train_original_dir)))
     test_indices = np.arange(0, len(os.listdir(test_original_dir)))
 
     train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices, IMAGE_SIZE)
     test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices, IMAGE_SIZE)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=100, sampler=RandomSampler(train_dataset, 5000))
-    test_dataloader = DataLoader(test_dataset, batch_size=100, shuffle=True, num_workers=2)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=RandomSampler(train_dataset, sample_size))
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     return train_dataloader, test_dataloader
 
