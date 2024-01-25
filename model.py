@@ -6,14 +6,19 @@ class ResNeXt(nn.Module):
         super(ResNeXt, self).__init__()
         self.inplanes = 64
 
+        # Initial convolutions
         self.conv1      = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1        = nn.BatchNorm2d(64)
         self.relu       = nn.LeakyReLU(inplace=True)
         self.maxpool    = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        # ResNeXt blocks
         self.layer1     = self._layer(planes=64, blocks=3)
         self.layer2     = self._layer(planes=128, blocks=4, stride=2)
         self.layer3     = self._layer(planes=256, blocks=6, stride=2)
         self.layer4     = self._layer(planes=512, blocks=3, stride=2)
+
+        # Deconvolutional layers
         self.deconv1    = nn.ConvTranspose2d(2048, 1024, kernel_size=4, stride=2)
         self.deconv2    = nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2)
         self.deconv3    = nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2)
@@ -148,6 +153,6 @@ class Discriminator(nn.Module):
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
         out = self.fc(out)
-        out = self.sigmoid(out)
+        # out = self.sigmoid(out)
 
         return out
