@@ -5,3 +5,5 @@
 !/images/.gitkeep
 /results/*
 !/results/.gitkeep
+
+/wandb/*

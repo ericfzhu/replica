@@ -36,7 +36,7 @@ def get_dataloaders(batch_size: int, sample_size: int = 5000) -> Union[DataLoade
     train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices, IMAGE_SIZE)
     test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices, IMAGE_SIZE)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=RandomSampler(train_dataset, sample_size), num_workers=4)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=RandomSampler(train_dataset, sample_size), num_workers=4, pin_memory=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     return train_dataloader, test_dataloader
