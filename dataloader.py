@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Union
 import torch
-from torch.utils.data import Dataset, DataLoader, Sampler
+from torch.utils.data import Dataset, DataLoader, RandomSampler
 from torchvision import datasets
 from PIL import Image
 import numpy as np
@@ -18,16 +18,6 @@ test_dslr_dir = Path('data/iphone/test_data/patches/canon')
 
 IMAGE_SIZE = 100 * 100 * 3
 
-class RandomSampler(Sampler):
-    def __init__(self, data_source, train_size):
-        self.data_source = data_source
-        self.train_size = train_size
-
-    def __iter__(self):
-        return iter(random.sample(range(len(self.data_source)), self.train_size))
-
-    def __len__(self):
-        return self.train_size
 
 def get_dataloaders(batch_size: int, sample_size: int = 5000) -> Union[DataLoader, DataLoader]:
     train_indices = np.arange(0, len(os.listdir(train_original_dir)))
@@ -36,7 +26,7 @@ def get_dataloaders(batch_size: int, sample_size: int = 5000) -> Union[DataLoade
     train_dataset = CustomImageDataset(train_original_dir, train_dslr_dir, train_indices, IMAGE_SIZE)
     test_dataset = CustomImageDataset(test_original_dir, test_dslr_dir, test_indices, IMAGE_SIZE)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=RandomSampler(train_dataset, sample_size), num_workers=4, pin_memory=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, sampler=RandomSampler(train_dataset, replacement=True, num_samples=sample_size), num_workers=4, pin_memory=True)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     return train_dataloader, test_dataloader
