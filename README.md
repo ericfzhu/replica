@@ -1,1 +1,1 @@
-# IMITATOR - IMage-toImage TranslATiOn with a Resnext-based gan
+# IMITATOR - **Im**age-to-**i**mage **t**ransl**at**i**o**n with a **R**esNeXt-based GAN
