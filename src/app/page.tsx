@@ -37,7 +37,10 @@ export default function Home() {
 				<h2 className="text-center text-3xl">Abstract</h2>
 				<p>
 					This work presents a ResNext-based Generative Adversarial Network for image-to-image translation, inspired by{' '}
-					<Link href="https://people.ee.ethz.ch/~ihnatova/index.html" className="text-accent-500 duration-300 hover:text-accent-400">
+					<Link
+						href="https://people.ee.ethz.ch/~ihnatova/index.html"
+						className="text-accent-500 duration-300 hover:text-accent-400"
+						target="_blank">
 						DSLR-Quality Photos on Mobile Devices with Deep Convolutional Networks
 					</Link>
 					. The goal of this work is to develop my understanding on the inner workings of CNNs and GANs and to apply them to a real-world
