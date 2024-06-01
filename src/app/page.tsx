@@ -51,13 +51,17 @@ export default function Home() {
 			</section>
 
 			<section className="flex max-w-3xl flex-col gap-2">
-				<h2 className="text-center text-3xl">Architecture</h2>
-				<p>
-					Nulla facilisi. Aenean tristique ultrices est, sed vulputate sem feugiat nec. Sed vitae mollis felis. Sed vel lacus egestas,
-					luctus lectus id, dignissim augue. Cras interdum vestibulum est, at tincidunt lacus interdum non. Quisque vestibulum nibh mattis,
-					vehicula nisi sit amet, dictum nulla. Nulla sed egestas nibh. Proin porttitor sem pulvinar, sodales orci vitae, congue elit.
-					Pellentesque velit orci, tempus non justo eu, vestibulum rutrum diam.
-				</p>
+				<h2 className="text-center text-3xl">Architectures</h2>
+				<div className="flex flex-col">
+					<div>
+						<h3 className="text-center text-2xl">Generator</h3>
+						<Image src="/generator.png" alt="ResNeXt-based Generator" width={500} height={500} className="w-full" />
+					</div>
+					<div>
+						<h3 className="text-center text-2xl">Discriminator</h3>
+						<Image src="/discriminator.png" alt="ResNeXt-based Generator" width={500} height={500} className="w-full" />
+					</div>
+				</div>
 			</section>
 		</main>
 	);
