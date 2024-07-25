@@ -17,6 +17,26 @@ interface ModelData extends ModelMetadata {
 	lastModified: number;
 }
 
+function getLatestModificationTimestamp(folderPath: string): number {
+    let latestTimestamp: number = 0;
+
+    const files: string[] = fs.readdirSync(folderPath);
+
+    files.forEach((file: string) => {
+        const filePath: string = path.join(folderPath, file);
+        const stats: fs.Stats = fs.statSync(filePath);
+
+        if (stats.isFile()) {
+            const fileTimestamp: number = stats.mtime.getTime();
+            if (fileTimestamp > latestTimestamp) {
+                latestTimestamp = fileTimestamp;
+            }
+        }
+    });
+
+    return latestTimestamp;
+}
+
 async function getModelsData(): Promise<ModelData[]> {
 	const modelsDirectory = path.join(process.cwd(), 'public', 'models');
 	const items = fs.readdirSync(modelsDirectory, { withFileTypes: true });
@@ -35,14 +55,14 @@ async function getModelsData(): Promise<ModelData[]> {
 		const hasPaper = fs.existsSync(paperPath);
 		const hasModel = fs.existsSync(modelPath);
 
-		const stats = fs.statSync(folderPath);
+		const latestModificationDate = getLatestModificationTimestamp(folderPath);
 
 		return {
 			id: folder,
 			...metadata,
 			hasPaper,
 			hasModel,
-			lastModified: stats.mtimeMs,
+			lastModified: latestModificationDate,
 		};
 	});
 	return modelsData;
