@@ -14,11 +14,8 @@ interface ModelMetadata {
 interface ModelData extends ModelMetadata {
 	id: string;
 	hasModel: boolean;
-	hasPaper: boolean;
 	lastModified: number;
 }
-
-type ModelsData = ModelData[];
 
 async function getModelsData(): Promise<ModelData[]> {
 	const modelsDirectory = path.join(process.cwd(), 'public', 'models');
@@ -78,14 +75,6 @@ export default async function Home() {
 								Abstract
 								<IconArrowUpRight />
 							</Link>
-							{model.hasPaper ? (
-								<Link href={`/models/${model.id}/paper.pdf`} className="text-sm flex items-center">
-									Paper
-									<IconArrowRight />
-								</Link>
-							) : (
-								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed">Paper</span>
-							)}
 							{/* {model.hasModel ? (
 								<Link href={model.id} className="text-sm">
 									Model
