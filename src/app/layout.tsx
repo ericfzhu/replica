@@ -1,14 +1,13 @@
-import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import type { Metadata } from 'next';
 
 import './globals.css';
 
 // const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-	title: 'Imitator: Image-to-Image Translation with a ResNeXt-based GAN',
-	description: '',
+	title: 'REPLICA: Implementations of machine learning papers in PyTorch',
+	description: 'Implementations of machine learning papers in PyTorch',
 };
 
 export default function RootLayout({
