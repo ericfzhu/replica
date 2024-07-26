@@ -57,3 +57,5 @@ class AlexNet(nn.Module):
 
         x = self.fc3(x)
         x = self.relu(x)
+
+        return x
