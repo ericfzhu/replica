@@ -1,6 +1,8 @@
 import { GeistMono } from 'geist/font/mono';
 import type { Metadata } from 'next';
 
+import { cn } from '@/lib/utils';
+
 import './globals.css';
 
 // const inter = Inter({ subsets: ['latin'] });
@@ -18,7 +20,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<link rel="icon" href="/icon.jpg" />
-			<body className={GeistMono.className}>{children}</body>
+			<body className={cn(GeistMono.className)}>{children}</body>
 		</html>
 	);
 }

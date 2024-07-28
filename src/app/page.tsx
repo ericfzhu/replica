@@ -18,23 +18,23 @@ interface ModelData extends ModelMetadata {
 }
 
 function getLatestModificationTimestamp(folderPath: string): number {
-    let latestTimestamp: number = 0;
+	let latestTimestamp: number = 0;
 
-    const files: string[] = fs.readdirSync(folderPath);
+	const files: string[] = fs.readdirSync(folderPath);
 
-    files.forEach((file: string) => {
-        const filePath: string = path.join(folderPath, file);
-        const stats: fs.Stats = fs.statSync(filePath);
+	files.forEach((file: string) => {
+		const filePath: string = path.join(folderPath, file);
+		const stats: fs.Stats = fs.statSync(filePath);
 
-        if (stats.isFile()) {
-            const fileTimestamp: number = stats.mtime.getTime();
-            if (fileTimestamp > latestTimestamp) {
-                latestTimestamp = fileTimestamp;
-            }
-        }
-    });
+		if (stats.isFile()) {
+			const fileTimestamp: number = stats.mtime.getTime();
+			if (fileTimestamp > latestTimestamp) {
+				latestTimestamp = fileTimestamp;
+			}
+		}
+	});
 
-    return latestTimestamp;
+	return latestTimestamp;
 }
 
 async function getModelsData(): Promise<ModelData[]> {
@@ -80,7 +80,7 @@ export default async function Home() {
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-24 text-black">
 			<section className="flex max-w-3xl flex-col items-center gap-2">
-				<h1 className="max-w-4xl flex-wrap text-center text-lg lg:text-3xl font-bold uppercase">Replica</h1>
+				<h1 className="max-w-4xl text-center text-lg lg:text-3xl font-bold uppercase">Replica</h1>
 				<span> Implementations of machine learning papers in PyTorch</span>
 			</section>
 
@@ -91,17 +91,23 @@ export default async function Home() {
 						<p className="text-gray-600 italic mb-2">{model.authors}</p>
 						{/* <span className="text-gray-500 mb-2">Last modified: {new Date(model.lastModified).toLocaleString()}</span> */}
 						<div className="flex text-[#4647F1] gap-4 items-center">
-							<Link href={model.link} className="text-sm flex items-center" target="_blank">
+							<Link
+								href={model.link}
+								className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px]"
+								target="_blank">
 								Abstract
 								<IconArrowUpRight />
 							</Link>
-							{/* {model.hasModel ? (
-								<Link href={model.id} className="text-sm">
+							{model.hasModel ? (
+								<Link
+									href={model.id}
+									className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
 									Model
+									<IconArrowRight />
 								</Link>
-							) : ( */}
-							<span className="text-sm rounded-md text-gray-500 cursor-not-allowed">Model</span>
-							{/* )} */}
+							) : (
+								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed">Model</span>
+							)}
 						</div>
 					</div>
 				))}
@@ -109,30 +115,3 @@ export default async function Home() {
 		</main>
 	);
 }
-
-// export async function getStaticProps() {
-// 	const modelsDirectory = path.join(process.cwd(), 'models');
-// 	const modelFolders = fs.readdirSync(modelsDirectory);
-
-// 	const modelsData: ModelsData = modelFolders.map((folder) => {
-// 		const metadataPath = path.join(modelsDirectory, folder, 'metadata.json');
-// 		const fileContents = fs.readFileSync(metadataPath, 'utf8');
-// 		const metadata: ModelMetadata = JSON.parse(fileContents);
-
-// 		const modelPath = path.join(modelsDirectory, folder, 'model.py');
-// 		const paperPath = path.join(modelsDirectory, folder, 'paper.pdf');
-
-// 		return {
-// 			id: folder,
-// 			...metadata,
-// 			hasModel: fs.existsSync(modelPath),
-// 			hasPaper: fs.existsSync(paperPath),
-// 		};
-// 	});
-
-// 	return {
-// 		props: {
-// 			models: modelsData,
-// 		},
-// 	};
-// }
