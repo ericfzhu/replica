@@ -3,3 +3,11 @@ The original breakout convolutional neural network (CNN) introduced by Alex Kriz
 
 ## Architecture
 ReLU activations ($f(x) = \max(0, x)$) were used in favor of the standard tanh activation function ($f(x) = \tanh(x)$), as the ReLU-based models trained several times faster than the tanh-based models.
+
+
+## Training
+
+
+## Results
+
+WIP
