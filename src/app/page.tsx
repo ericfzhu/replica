@@ -79,9 +79,9 @@ export default async function Home() {
 	});
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-24 text-black">
-			<section className="flex max-w-3xl flex-col items-center gap-2">
-				<h1 className="max-w-4xl text-center text-lg lg:text-3xl font-bold uppercase">Replica</h1>
-				<span> Implementations of machine learning papers in PyTorch</span>
+			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
+				<h1 className="text-4xl font-bold uppercase">Replica</h1>
+				<span className="text-center">Implementations of machine learning papers in PyTorch</span>
 			</section>
 
 			<section className="flex max-w-3xl flex-col gap-8">
@@ -93,7 +93,7 @@ export default async function Home() {
 						<div className="flex text-[#4647F1] gap-4 items-center">
 							<Link
 								href={model.link}
-								className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px]"
+								className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] gap-2"
 								target="_blank">
 								Abstract
 								<IconArrowUpRight />

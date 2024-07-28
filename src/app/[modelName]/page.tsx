@@ -1,10 +1,13 @@
 import { IconArrowLeft, IconArrowUpRight } from '@tabler/icons-react';
 import fs from 'fs';
+import 'katex/dist/katex.min.css';
 import Link from 'next/link';
 import path from 'path';
-import ReactMarkdown from 'react-markdown';
+import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
 
 interface PageProps {
 	params: { modelName: string };
@@ -27,37 +30,41 @@ export default function ModelPage({ params }: PageProps) {
 	const metadata: Metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
 
 	return (
-		<main className="container mx-auto py-24">
-			<div className="flex items-center justify-between mb-6">
-				<Link href="/" className="text-[#4647F1] hover:border-[#4647F1] border-transparent border-b-[1px] flex items-center gap-2">
+		<main className="px-8 mx-auto py-24">
+			<div className="relative mb-6 flex w-full flex-col items-center">
+				<Link
+					href="/"
+					className="absolute left-0 top-1/2 -translate-y-1/2 text-[#4647F1] hover:border-[#4647F1] border-transparent border-b-[1px] flex items-center gap-2">
 					<IconArrowLeft />
 					Back
 				</Link>
-				<h1 className="text-center text-lg lg:text-3xl font-bold uppercase">Replica</h1>
-				<div className="w-10"></div> {/* This empty div balances the layout */}
+				<h1 className="text-4xl font-bold uppercase">Replica</h1>
 			</div>
-
-			<h2 className="text-2xl font-bold">{metadata.title}</h2>
+			<h2 className="text-2xl font-semibold">{metadata.title}</h2>
 			<p className="text-gray-600 italic mb-2">Authors: {metadata.authors}</p>
-			<Link
-				href={metadata.link}
-				className="text-[#4647F1] text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] w-fit"
-				target="_blank">
-				Abstract
-				<IconArrowUpRight />
-			</Link>
+			<div className="flex items-center gap-2">
+				<Link
+					href={metadata.link}
+					className="text-[#4647F1] text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] w-fit gap-2"
+					target="_blank">
+					Abstract
+					<IconArrowUpRight />
+				</Link>
+				<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+					Model
+					<IconArrowUpRight />
+				</span>
+			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 				<div>
-					{/* <h3 className="text-xl font-semibold mb-2">model.py</h3> */}
 					<SyntaxHighlighter language="python" style={atomDark} codeTagProps={{ className: 'text-sm' }}>
 						{modelCode}
 					</SyntaxHighlighter>
 				</div>
 				{description && (
-					<div>
-						<h3 className="text-xl font-semibold mb-2">Description</h3>
-						<ReactMarkdown>{description}</ReactMarkdown>
-					</div>
+					<Markdown className="prose prose-zinc max-w-full" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+						{description}
+					</Markdown>
 				)}
 			</div>
 		</main>
