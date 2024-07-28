@@ -43,6 +43,15 @@ async function getModelsData(): Promise<ModelData[]> {
 
 	const modelFolders = items.filter((item) => item.isDirectory()).map((item) => item.name);
 
+	// Read the custom order configuration
+	const orderConfigPath = path.join(process.cwd(), 'public', 'models', 'modelOrder.json');
+	let orderConfig: string[] = [];
+	try {
+		orderConfig = JSON.parse(fs.readFileSync(orderConfigPath, 'utf8'));
+	} catch (error) {
+		console.warn('Failed to read modelOrder.json. Using default sorting.');
+	}
+
 	const modelsData: ModelData[] = modelFolders.map((folder) => {
 		const folderPath = path.join(modelsDirectory, folder);
 		const metadataPath = path.join(folderPath, 'metadata.json');
@@ -65,18 +74,37 @@ async function getModelsData(): Promise<ModelData[]> {
 			lastModified: latestModificationDate,
 		};
 	});
+
+	// Sort the modelsData array
+	modelsData.sort((a, b) => {
+		// First, prioritize models with code
+		if (a.hasCode !== b.hasCode) {
+			return a.hasCode ? -1 : 1;
+		}
+
+		// Then, use the custom order
+		const indexA = orderConfig.indexOf(a.id);
+		const indexB = orderConfig.indexOf(b.id);
+
+		// If both models are in the custom order, use that order
+		if (indexA !== -1 && indexB !== -1) {
+			return indexA - indexB;
+		}
+
+		// If only one model is in the custom order, prioritize it
+		if (indexA !== -1) return -1;
+		if (indexB !== -1) return 1;
+
+		// If neither is in the custom order, fall back to the last modified date
+		return b.lastModified - a.lastModified;
+	});
+
 	return modelsData;
 }
 
 export default async function Home() {
 	const models = await getModelsData();
 
-	const sortedModels = models.sort((a, b) => {
-		if (a.hasCode !== b.hasCode) {
-			return a.hasCode ? -1 : 1;
-		}
-		return b.lastModified - a.lastModified;
-	});
 	return (
 		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-24 text-black">
 			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
@@ -85,7 +113,7 @@ export default async function Home() {
 			</section>
 
 			<section className="flex max-w-3xl flex-col gap-8">
-				{sortedModels.map((model: ModelData) => (
+				{models.map((model: ModelData) => (
 					<div key={model.id} className="">
 						<h2 className="text-2xl font-semibold">{model.title}</h2>
 						<p className="text-gray-600 italic mb-2">{model.authors}</p>
