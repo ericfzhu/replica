@@ -49,7 +49,7 @@ export default function ModelPage({ params }: PageProps) {
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 				<div>
 					{/* <h3 className="text-xl font-semibold mb-2">model.py</h3> */}
-					<SyntaxHighlighter language="python" style={atomDark}>
+					<SyntaxHighlighter language="python" style={atomDark} codeTagProps={{ className: 'text-sm' }}>
 						{modelCode}
 					</SyntaxHighlighter>
 				</div>
