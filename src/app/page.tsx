@@ -13,7 +13,7 @@ interface ModelMetadata {
 
 interface ModelData extends ModelMetadata {
 	id: string;
-	hasModel: boolean;
+	hasCode: boolean;
 	lastModified: number;
 }
 
@@ -53,7 +53,7 @@ async function getModelsData(): Promise<ModelData[]> {
 		const modelPath = path.join(folderPath, 'model.py');
 
 		const hasPaper = fs.existsSync(paperPath);
-		const hasModel = fs.existsSync(modelPath);
+		const hasCode = fs.existsSync(modelPath);
 
 		const latestModificationDate = getLatestModificationTimestamp(folderPath);
 
@@ -61,7 +61,7 @@ async function getModelsData(): Promise<ModelData[]> {
 			id: folder,
 			...metadata,
 			hasPaper,
-			hasModel,
+			hasCode,
 			lastModified: latestModificationDate,
 		};
 	});
@@ -72,8 +72,8 @@ export default async function Home() {
 	const models = await getModelsData();
 
 	const sortedModels = models.sort((a, b) => {
-		if (a.hasModel !== b.hasModel) {
-			return a.hasModel ? -1 : 1;
+		if (a.hasCode !== b.hasCode) {
+			return a.hasCode ? -1 : 1;
 		}
 		return b.lastModified - a.lastModified;
 	});
@@ -98,16 +98,23 @@ export default async function Home() {
 								Abstract
 								<IconArrowUpRight />
 							</Link>
-							{model.hasModel ? (
+							{model.hasCode ? (
 								<Link
 									href={model.id}
 									className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
-									Model
+									Code
 									<IconArrowRight />
 								</Link>
 							) : (
-								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed">Model</span>
+								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+									Code
+									<IconArrowRight />
+								</span>
 							)}
+							<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+								Model
+								<IconArrowUpRight />
+							</span>
 						</div>
 					</div>
 				))}
