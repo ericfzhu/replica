@@ -1,13 +1,14 @@
 import { IconArrowLeft, IconArrowUpRight } from '@tabler/icons-react';
 import fs from 'fs';
 import 'katex/dist/katex.min.css';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import path from 'path';
 import Markdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+
+import CodeDisplay from '@/components/codeDisplay';
 
 interface PageProps {
 	params: { modelName: string };
@@ -56,11 +57,7 @@ export default function ModelPage({ params }: PageProps) {
 				</span>
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-				<div>
-					<SyntaxHighlighter language="python" style={atomDark} codeTagProps={{ className: 'text-sm' }}>
-						{modelCode}
-					</SyntaxHighlighter>
-				</div>
+				<CodeDisplay code={modelCode} language="python" fileName={`${params.modelName}_model.py`} />
 				{description && (
 					<Markdown className="prose prose-zinc max-w-full" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
 						{description}
