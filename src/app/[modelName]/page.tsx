@@ -60,7 +60,7 @@ export default function ModelPage({ params }: PageProps) {
 				<CodeDisplay code={modelCode} language="python" fileName={`${params.modelName}_model.py`} />
 				{description && (
 					<Markdown
-						className="prose prose-zinc max-w-full items-center flex flex-col text-left"
+						className="prose prose-zinc max-w-none prose-img:mx-auto prose-katex:w-full"
 						remarkPlugins={[remarkMath]}
 						rehypePlugins={[rehypeKatex]}>
 						{description}
