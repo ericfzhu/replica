@@ -42,7 +42,7 @@ export default function ModelPage({ params }: PageProps) {
 				<h1 className="text-4xl font-bold uppercase">Replica</h1>
 			</div>
 			<h2 className="text-2xl font-semibold">{metadata.title}</h2>
-			<p className="text-gray-600 italic mb-2">Authors: {metadata.authors}</p>
+			<p className="text-gray-600 italic mb-2">{metadata.authors}</p>
 			<div className="flex items-center gap-2">
 				<Link
 					href={metadata.link}

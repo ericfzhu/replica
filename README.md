@@ -1,1 +1,2 @@
-# IMITATOR - **Im**age-to-**i**mage **t**ransl**at**i**o**n with a **R**esNeXt-based GAN
+# REPLICA
+Implementations of machine learning papers in PyTorch
