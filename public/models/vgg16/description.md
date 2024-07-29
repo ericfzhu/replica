@@ -1,0 +1,2 @@
+## Introduction
+Simonyan and Zisserman, 2014 introduced the importance of depth in the architectural design of the convolutional neural network (CNN). This is achieved by fixing the other parameters of the architecture, and steadily increasing the depth of the network by adding more convolutional layers by using small ($3 \times 3$) convolutional filters in all layers.

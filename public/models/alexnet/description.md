@@ -13,6 +13,7 @@ Reponse normalization layers follow the first and second convolutional layers, a
 ![Model diagram](models/alexnet/image1.jpg)
 
 ## Training
+Waiting for datasets to be downloaded. Will be trained on the [ILSVRC 2010](https://www.image-net.org/challenges/LSVRC/2010/index.php) dataset for object classification and  [ILSVRC 2012](https://www.image-net.org/challenges/LSVRC/2012/index.php) dataset for object localization and object detection.
 
 
 ## Results
