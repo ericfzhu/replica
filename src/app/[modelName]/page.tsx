@@ -59,7 +59,10 @@ export default function ModelPage({ params }: PageProps) {
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 				<CodeDisplay code={modelCode} language="python" fileName={`${params.modelName}_model.py`} />
 				{description && (
-					<Markdown className="prose prose-zinc max-w-full" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+					<Markdown
+						className="prose prose-zinc max-w-full items-center flex flex-col text-left"
+						remarkPlugins={[remarkMath]}
+						rehypePlugins={[rehypeKatex]}>
 						{description}
 					</Markdown>
 				)}

@@ -32,7 +32,7 @@ export default function CodeDisplay({ code, language, fileName }: CodeDisplayPro
 	}
 
 	return (
-		<div className="border border-gray-700 rounded-md overflow-hidden">
+		<div className="border border-gray-700 rounded-md overflow-hidden h-fit">
 			<SyntaxHighlighter
 				language={language}
 				style={atomDark}
