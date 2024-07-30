@@ -5,8 +5,6 @@ import { cn } from '@/lib/utils';
 
 import './globals.css';
 
-// const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
 	title: 'REPLICA: Implementations of machine learning papers in PyTorch',
 	description: 'Implementations of machine learning papers in PyTorch',
@@ -19,7 +17,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<link rel="icon" href="/icon.jpg" />
+			<link rel="icon" href="/favicon.ico" />
 			<body className={cn(GeistMono.className)}>{children}</body>
 		</html>
 	);
