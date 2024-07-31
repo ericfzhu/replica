@@ -100,7 +100,7 @@ export default async function Home() {
 	const models = await getModelsData();
 
 	return (
-		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-24 text-black">
+		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-8 text-black">
 			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
 				<h1 className="text-4xl font-bold uppercase">Replica</h1>
 				<span className="text-center">Implementations of machine learning papers in PyTorch</span>
@@ -110,7 +110,7 @@ export default async function Home() {
 				alt="Replica Logo"
 				width={128}
 				height={128}
-				className="absolute top-24 right-24 h-10 w-10 select-none pointer-events-none"
+				className="absolute top-8 right-8 h-10 w-10 select-none pointer-events-none"
 			/>
 
 			<section className="flex max-w-3xl flex-col gap-8">

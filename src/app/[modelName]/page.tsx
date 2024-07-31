@@ -31,7 +31,7 @@ export default function ModelPage({ params }: PageProps) {
 	const metadata: Metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
 
 	return (
-		<main className="px-8 mx-auto py-24">
+		<main className="px-8 mx-auto py-8">
 			<div className="relative mb-6 flex w-full flex-col items-center">
 				<Link
 					href="/"
@@ -46,7 +46,7 @@ export default function ModelPage({ params }: PageProps) {
 				alt="Replica Logo"
 				width={128}
 				height={128}
-				className="absolute top-24 right-24 h-10 w-10 select-none pointer-events-none"
+				className="absolute top-8 right-8 h-10 w-10 select-none pointer-events-none"
 			/>
 			<h2 className="text-2xl font-semibold">{metadata.title}</h2>
 			<p className="text-gray-600 italic mb-2">{metadata.authors}</p>
