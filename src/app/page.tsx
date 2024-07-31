@@ -44,7 +44,6 @@ async function getModelsData(): Promise<ModelData[]> {
 
 	const modelFolders = items.filter((item) => item.isDirectory()).map((item) => item.name);
 
-	// Read the custom order configuration
 	const orderConfigPath = path.join(process.cwd(), 'public', 'models', 'modelOrder.json');
 	let orderConfig: string[] = [];
 	try {
@@ -76,27 +75,21 @@ async function getModelsData(): Promise<ModelData[]> {
 		};
 	});
 
-	// Sort the modelsData array
 	modelsData.sort((a, b) => {
-		// First, prioritize models with code
 		if (a.hasCode !== b.hasCode) {
 			return a.hasCode ? -1 : 1;
 		}
 
-		// Then, use the custom order
 		const indexA = orderConfig.indexOf(a.id);
 		const indexB = orderConfig.indexOf(b.id);
 
-		// If both models are in the custom order, use that order
 		if (indexA !== -1 && indexB !== -1) {
 			return indexA - indexB;
 		}
 
-		// If only one model is in the custom order, prioritize it
 		if (indexA !== -1) return -1;
 		if (indexB !== -1) return 1;
 
-		// If neither is in the custom order, fall back to the last modified date
 		return b.lastModified - a.lastModified;
 	});
 
@@ -125,7 +118,6 @@ export default async function Home() {
 					<div key={model.id} className="">
 						<h2 className="text-2xl font-semibold">{model.title}</h2>
 						<p className="text-gray-600 italic mb-2">{model.authors}</p>
-						{/* <span className="text-gray-500 mb-2">Last modified: {new Date(model.lastModified).toLocaleString()}</span> */}
 						<div className="flex text-[#4647F1] gap-4 items-center">
 							<Link
 								href={model.link}

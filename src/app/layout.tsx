@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import './globals.css';
 
 export const metadata: Metadata = {
-	title: 'REPLICA: Implementations of machine learning papers in PyTorch',
+	title: 'REPLICA',
 	description: 'Implementations of machine learning papers in PyTorch',
 };
 
