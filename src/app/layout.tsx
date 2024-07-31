@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<link rel="icon" href="/favicon.ico" />
+			<link rel="icon" href="/icon.jpg" />
 			<body className={cn(GeistMono.className)}>{children}</body>
 		</html>
 	);

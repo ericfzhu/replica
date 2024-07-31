@@ -1,5 +1,6 @@
 import { IconArrowRight, IconArrowUpRight } from '@tabler/icons-react';
 import fs from 'fs';
+import Image from 'next/image';
 import Link from 'next/link';
 import path from 'path';
 
@@ -111,6 +112,13 @@ export default async function Home() {
 				<h1 className="text-4xl font-bold uppercase">Replica</h1>
 				<span className="text-center">Implementations of machine learning papers in PyTorch</span>
 			</section>
+			<Image
+				src="/icon.jpg"
+				alt="Replica Logo"
+				width={128}
+				height={128}
+				className="absolute top-24 right-24 h-10 w-10 select-none pointer-events-none"
+			/>
 
 			<section className="flex max-w-3xl flex-col gap-8">
 				{models.map((model: ModelData) => (
