@@ -1,7 +1,7 @@
 import { IconArrowLeft, IconArrowUpRight } from '@tabler/icons-react';
 import fs from 'fs';
 import 'katex/dist/katex.min.css';
-import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import Link from 'next/link';
 import path from 'path';
 import Markdown from 'react-markdown';
@@ -41,6 +41,13 @@ export default function ModelPage({ params }: PageProps) {
 				</Link>
 				<h1 className="text-4xl font-bold uppercase">Replica</h1>
 			</div>
+			<Image
+				src="/icon.jpg"
+				alt="Replica Logo"
+				width={128}
+				height={128}
+				className="absolute top-24 right-24 h-10 w-10 select-none pointer-events-none"
+			/>
 			<h2 className="text-2xl font-semibold">{metadata.title}</h2>
 			<p className="text-gray-600 italic mb-2">{metadata.authors}</p>
 			<div className="flex items-center gap-2">
