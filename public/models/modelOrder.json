@@ -1,1 +1,1 @@
-["alexnet", "vgg16", "resnet", "dped", "generative_adversarial_nets", "tortoise", "whisper", "adam"]
+["alexnet", "vgg16", "resnet", "dped", "gan", "dcgan", "tortoise", "whisper", "adam"]
