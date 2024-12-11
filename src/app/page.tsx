@@ -104,9 +104,9 @@ export default async function Home() {
 			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
 				<div className="flex gap-4 items-center">
 					<Image src="/icon.jpg" alt="Replica Logo" width={128} height={128} className="h-8 w-8 select-none pointer-events-none" />
-					<h1 className="text-4xl font-bold uppercase">Replica</h1>
+					<h1 className="text-4xl font-bold uppercase text-zinc-800">Replica</h1>
 				</div>
-				<span className="text-center">Implementations of ML papers</span>
+				<span className="text-center text-zinc-700">Implementations of ML papers</span>
 			</section>
 
 			<section className="flex max-w-3xl flex-col gap-8">
@@ -114,8 +114,8 @@ export default async function Home() {
 					.filter((model) => !('hide' in model && model.hide === true))
 					.map((model: ModelData) => (
 						<div key={model.id} className="">
-							<h2 className="text-2xl font-semibold">{model.title}</h2>
-							<p className="text-gray-600 italic mb-2">{model.authors}</p>
+							<h2 className="text-2xl font-semibold text-zinc-800">{model.title}</h2>
+							<p className="text-zinc-600 italic mb-2">{model.authors}</p>
 							<div className="flex text-[#4647F1] gap-4 items-center">
 								<Link
 									href={model.link}
@@ -132,12 +132,12 @@ export default async function Home() {
 										<IconArrowRight />
 									</Link>
 								) : (
-									<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+									<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
 										Code
 										<IconArrowRight />
 									</span>
 								)}
-								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+								<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
 									Model
 									<IconArrowUpRight />
 								</span>
