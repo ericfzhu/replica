@@ -6,6 +6,59 @@ import path from 'path';
 
 export const dynamic = 'force-static';
 
+export default async function Home() {
+	const models = await getModelsData();
+
+	return (
+		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-8 text-black">
+			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
+				<div className="flex gap-4 items-center">
+					<Image src="/icon.jpg" alt="Replica Logo" width={128} height={128} className="h-8 w-8 select-none pointer-events-none" />
+					<h1 className="text-4xl font-bold uppercase text-zinc-800">Replica</h1>
+				</div>
+				<span className="text-center text-zinc-700">Implementations of ML papers</span>
+			</section>
+
+			<section className="flex max-w-3xl flex-col gap-8">
+				{models
+					.filter((model) => !('hide' in model && model.hide === true))
+					.map((model: ModelData) => (
+						<div key={model.id} className="">
+							<h2 className="text-2xl font-semibold text-zinc-800">{model.title}</h2>
+							<p className="text-zinc-600 italic mb-2">{model.authors}</p>
+							<div className="flex text-[#4647F1] gap-4 items-center">
+								<Link
+									href={model.link}
+									className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] gap-2"
+									target="_blank">
+									Abstract
+									<IconArrowUpRight />
+								</Link>
+								{model.hasCode ? (
+									<Link
+										href={model.id}
+										className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
+										Code
+										<IconArrowRight />
+									</Link>
+								) : (
+									<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
+										Code
+										<IconArrowRight />
+									</span>
+								)}
+								<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
+									Model
+									<IconArrowUpRight />
+								</span>
+							</div>
+						</div>
+					))}
+			</section>
+		</main>
+	);
+}
+
 interface ModelMetadata {
 	title: string;
 	authors: string;
@@ -94,57 +147,4 @@ async function getModelsData(): Promise<ModelData[]> {
 	});
 
 	return modelsData;
-}
-
-export default async function Home() {
-	const models = await getModelsData();
-
-	return (
-		<main className="flex min-h-screen flex-col items-center gap-12 bg-white p-8 text-black">
-			<section className="flex max-w-3xl w-full flex-col items-center gap-2">
-				<div className="flex gap-4 items-center">
-					<Image src="/icon.jpg" alt="Replica Logo" width={128} height={128} className="h-8 w-8 select-none pointer-events-none" />
-					<h1 className="text-4xl font-bold uppercase text-zinc-800">Replica</h1>
-				</div>
-				<span className="text-center text-zinc-700">Implementations of ML papers</span>
-			</section>
-
-			<section className="flex max-w-3xl flex-col gap-8">
-				{models
-					.filter((model) => !('hide' in model && model.hide === true))
-					.map((model: ModelData) => (
-						<div key={model.id} className="">
-							<h2 className="text-2xl font-semibold text-zinc-800">{model.title}</h2>
-							<p className="text-zinc-600 italic mb-2">{model.authors}</p>
-							<div className="flex text-[#4647F1] gap-4 items-center">
-								<Link
-									href={model.link}
-									className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] gap-2"
-									target="_blank">
-									Abstract
-									<IconArrowUpRight />
-								</Link>
-								{model.hasCode ? (
-									<Link
-										href={model.id}
-										className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
-										Code
-										<IconArrowRight />
-									</Link>
-								) : (
-									<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
-										Code
-										<IconArrowRight />
-									</span>
-								)}
-								<span className="text-sm rounded-md text-zinc-500 cursor-not-allowed flex items-center gap-2">
-									Model
-									<IconArrowUpRight />
-								</span>
-							</div>
-						</div>
-					))}
-			</section>
-		</main>
-	);
 }

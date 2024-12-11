@@ -8,7 +8,7 @@ import Markdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 
-import CodeDisplay from '@/components/codeDisplay';
+import CodeSections from '@/components/codeSections';
 
 interface PageProps {
 	params: { modelName: string };
@@ -23,10 +23,14 @@ interface Metadata {
 export default function ModelPage({ params }: PageProps) {
 	const modelDir = path.join(process.cwd(), 'public', 'models', params.modelName);
 	const modelPath = path.join(modelDir, 'model.py');
+	const mainPath = path.join(modelDir, 'main.py');
+	const dataloaderPath = path.join(modelDir, 'dataloader.py');
 	const descriptionPath = path.join(modelDir, 'description.md');
 	const metadataPath = path.join(modelDir, 'metadata.json');
 
 	const modelCode = fs.readFileSync(modelPath, 'utf8');
+	const mainCode = fs.existsSync(mainPath) ? fs.readFileSync(mainPath, 'utf8') : null;
+	const dataloaderCode = fs.existsSync(dataloaderPath) ? fs.readFileSync(dataloaderPath, 'utf8') : null;
 	const description = fs.existsSync(descriptionPath) ? fs.readFileSync(descriptionPath, 'utf8') : null;
 	const metadata: Metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
 
@@ -64,7 +68,7 @@ export default function ModelPage({ params }: PageProps) {
 				</span>
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-				<CodeDisplay code={modelCode} language="python" fileName={`${params.modelName}_model.py`} />
+				<CodeSections modelCode={modelCode} mainCode={mainCode} dataloaderCode={dataloaderCode} modelName={params.modelName} />
 				{description && (
 					<Markdown
 						className="prose prose-zinc max-w-none prose-img:mx-auto prose-katex:w-full"
