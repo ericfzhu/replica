@@ -1,5 +1,6 @@
 {
 	"title": "Depth Anything: Unleashing the Power of Large-Scale Unlabeled Data",
 	"authors": "Lihe Yang, Bingyi Kang, Zilong Huang, Xiaogang Xu, Jiashi Feng, Hengshuang Zhao",
-	"link": "https://arxiv.org/abs/2401.10891"
+	"link": "https://arxiv.org/abs/2401.10891",
+	"hide": true
 }

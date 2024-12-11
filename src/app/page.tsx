@@ -110,38 +110,40 @@ export default async function Home() {
 			</section>
 
 			<section className="flex max-w-3xl flex-col gap-8">
-				{models.map((model: ModelData) => (
-					<div key={model.id} className="">
-						<h2 className="text-2xl font-semibold">{model.title}</h2>
-						<p className="text-gray-600 italic mb-2">{model.authors}</p>
-						<div className="flex text-[#4647F1] gap-4 items-center">
-							<Link
-								href={model.link}
-								className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] gap-2"
-								target="_blank">
-								Abstract
-								<IconArrowUpRight />
-							</Link>
-							{model.hasCode ? (
+				{models
+					.filter((model) => !('hide' in model && model.hide === true))
+					.map((model: ModelData) => (
+						<div key={model.id} className="">
+							<h2 className="text-2xl font-semibold">{model.title}</h2>
+							<p className="text-gray-600 italic mb-2">{model.authors}</p>
+							<div className="flex text-[#4647F1] gap-4 items-center">
 								<Link
-									href={model.id}
-									className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
-									Code
-									<IconArrowRight />
+									href={model.link}
+									className="text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] gap-2"
+									target="_blank">
+									Abstract
+									<IconArrowUpRight />
 								</Link>
-							) : (
+								{model.hasCode ? (
+									<Link
+										href={model.id}
+										className="text-sm flex items-center gap-2 hover:border-[#4647F1] border-transparent border-b-[1px]">
+										Code
+										<IconArrowRight />
+									</Link>
+								) : (
+									<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+										Code
+										<IconArrowRight />
+									</span>
+								)}
 								<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
-									Code
-									<IconArrowRight />
+									Model
+									<IconArrowUpRight />
 								</span>
-							)}
-							<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
-								Model
-								<IconArrowUpRight />
-							</span>
+							</div>
 						</div>
-					</div>
-				))}
+					))}
 			</section>
 		</main>
 	);

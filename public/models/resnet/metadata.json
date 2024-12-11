@@ -1,5 +1,6 @@
 {
 	"title": "[ResNet] Deep Residual Learning for Image Recognition",
 	"authors": "Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun",
-	"link": "https://arxiv.org/abs/1512.03385"
+	"link": "https://arxiv.org/abs/1512.03385",
+	"hide": true
 }
