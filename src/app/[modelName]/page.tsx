@@ -43,15 +43,18 @@ export default function ModelPage({ params }: PageProps) {
 					<IconArrowLeft />
 					Back
 				</Link>
-				<h1 className="text-4xl font-bold uppercase">Replica</h1>
+				<div className="flex gap-4 items-center">
+					<Image src="/icon.jpg" alt="Replica Logo" width={128} height={128} className="h-8 w-8 select-none pointer-events-none" />
+					<h1 className="text-4xl font-bold uppercase text-zinc-800">Replica</h1>
+				</div>
 			</div>
-			<Image
+			{/* <Image
 				src="/icon.jpg"
 				alt="Replica Logo"
 				width={128}
 				height={128}
 				className="absolute top-8 right-8 h-10 w-10 select-none pointer-events-none"
-			/>
+			/> */}
 			<h2 className="text-2xl font-semibold">{metadata.title}</h2>
 			<p className="text-gray-600 italic mb-2">{metadata.authors}</p>
 			<div className="flex items-center gap-2">
