@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 import tarfile
 from pathlib import Path
-from scipy import sio
+import scipy.io as sio
 from tqdm import tqdm
 import glob
 from PIL import Image
@@ -10,7 +10,7 @@ import torch
 
 def compute_mean_std(batch_size=128, num_workers=4):
     transform = transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize((256, 256)),  # Fixed size for both dimensions
         transforms.ToTensor()
     ])
 
@@ -52,7 +52,7 @@ def compute_mean_std(batch_size=128, num_workers=4):
     std = (squared_mean - mean.pow(2)).sqrt()
 
     return mean, std
-    
+
 
 class ILSVRC2010Dataset(Dataset):
     def __init__(self, root_dir, transform=None, split='train'):
@@ -70,7 +70,7 @@ class ILSVRC2010Dataset(Dataset):
             self.labels = []
             for i in range(1000):  # 1000 classes
                 synset = self.synsets[i]
-                wnid = str(synset['WNID'][0, 0][0])
+                wnid = str(synset['WNID'][0][0])
                 tar_path = Path(self.image_dir, f"{wnid}.tar")
                 if tar_path.exists():
                     self.tar_files.append(tar_path)
@@ -80,8 +80,9 @@ class ILSVRC2010Dataset(Dataset):
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
             self.images = []
-            self.labels = []
+            self.image_labels = []  # Changed from self.labels to self.image_labels for consistency
 
+            print(f'Found {len(self.tar_files)} tar files')
             print('Extracting training images...')
             for tar_file, label in tqdm(zip(self.tar_files, self.labels), total=len(self.tar_files)):
                 synset_id = tar_file.stem
@@ -93,8 +94,11 @@ class ILSVRC2010Dataset(Dataset):
                         tar.extractall(path=cache_dir)
                 
                 synset_images = glob.glob(str(cache_dir / '*.JPEG'))
-                self.images.extend(synset_images)
-                self.labels.extend([label] * len(synset_images))
+                if synset_images:  # Only add if we found images
+                    self.images.extend(synset_images)
+                    self.image_labels.extend([label] * len(synset_images))
+                else:
+                    print(f"Warning: No images found in {cache_dir}")
 
         elif split == 'val':
             self.image_dir = Path(root_dir, 'val')
@@ -111,67 +115,95 @@ class ILSVRC2010Dataset(Dataset):
             
             self.images = sorted(glob.glob(str(val_dir / '*.JPEG')))
             self.image_labels = self.val_labels
+            
+        # Add debug information
+        print(f"Dataset initialized with {len(self.images)} images for {split} split")
 
     def __len__(self):
         return len(self.images)
     
-    def __getitem(self, idx):
+    def __getitem__(self, idx):
         image_path = self.images[idx]
         try:
             image = Image.open(image_path).convert('RGB')
         except Exception as e:
             print(f'Error loading image {image_path}: {e}')
-            return self[idx + 1], self.labels[idx + 1]
+            return self.__getitem__(idx + 1)
         
         label = self.image_labels[idx]
 
         if self.transform:
             image = self.transform(image)
 
+        # Convert label to torch tensor
+        label = torch.tensor(label, dtype=torch.long)
+
         return image, label
+
+
+def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=4):
+    """
+    Create and return training and validation dataloaders for ILSVRC2010.
     
+    Args:
+        root_dir (str): Root directory containing the dataset
+        batch_size (int): Batch size for both loaders
+        num_workers (int): Number of worker processes for data loading
+        
+    Returns:
+        tuple: (train_loader, val_loader)
+    """
+    # Compute dataset statistics
+    mean, std = compute_mean_std(batch_size, num_workers)
 
-mean, std = compute_mean_std()
+    # Define transforms
+    train_transform = transforms.Compose([
+        transforms.Resize((256, 256)),  # Fixed size for both dimensions
+        transforms.RandomCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+    ])
 
-train_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.RandomCrop(224),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=mean.tolist(), std=std.tolist())
-])
+    val_transform = transforms.Compose([
+        transforms.Resize((256, 256)),  # Fixed size for both dimensions
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+    ])
 
-val_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=mean.tolist(), std=std.tolist())
-])
+    # Create datasets
+    train_dataset = ILSVRC2010Dataset(
+        root_dir=root_dir,
+        split='train',
+        transform=train_transform
+    )
 
-train_dataset = ILSVRC2010Dataset(
-    root_dir='data/ILSVRC2010',
-    split='train',
-    transform=train_transform
-)
+    val_dataset = ILSVRC2010Dataset(
+        root_dir=root_dir,
+        split='val',
+        transform=val_transform
+    )
 
-val_dataset = ILSVRC2010Dataset(
-    root_dir='data/ILSVRC2010',
-    split='val',
-    transform=val_transform
-)
+    # Create dataloaders
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True
+    )
 
-train_loader = torch.utils.data.DataLoader(
-    train_dataset,
-    batch_size=128,
-    shuffle=True,
-    num_workers=4,
-    pin_memory=True
-)
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
+    )
 
-val_loader = torch.utils.data.DataLoader(
-    val_dataset,
-    batch_size=128,
-    shuffle=False,
-    num_workers=4,
-    pin_memory=True
-)
+    return train_loader, val_loader
+
+
+if __name__ == '__main__':
+    train_loader, val_loader = get_dataloaders()

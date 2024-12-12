@@ -56,7 +56,7 @@ export default function CodeSections({ modelCode, mainCode, dataloaderCode, mode
 
 					<div className={cn('grid px-4 transition-all', openSections.main ? 'grid-rows-[1fr] py-4' : 'grid-rows-[0fr]')}>
 						<div className="overflow-hidden">
-							<CodeDisplay code={modelCode} language="python" fileName={`${modelName}_main.py`} />
+							<CodeDisplay code={mainCode} language="python" fileName={`${modelName}_main.py`} />
 						</div>
 					</div>
 				</div>
@@ -73,7 +73,7 @@ export default function CodeSections({ modelCode, mainCode, dataloaderCode, mode
 
 					<div className={cn('grid px-4 transition-all', openSections.dataloader ? 'grid-rows-[1fr] py-4' : 'grid-rows-[0fr]')}>
 						<div className="overflow-hidden">
-							<CodeDisplay code={modelCode} language="python" fileName={`${modelName}_dataloader.py`} />
+							<CodeDisplay code={dataloaderCode} language="python" fileName={`${modelName}_dataloader.py`} />
 						</div>
 					</div>
 				</div>

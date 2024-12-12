@@ -2,13 +2,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-import time
-import os
 from pathlib import Path
 from tqdm import tqdm
 
 from model import AlexNet
-from dataloader import train_loader, val_loader
+from dataloader import get_dataloaders
 
 def train_one_epoch(model, criterion, optimizer, train_loader, device, epoch):
     model.train()
@@ -70,6 +68,9 @@ def main():
     # Initialize model
     model = AlexNet(num_classes=1000)
     model = model.to(device)
+
+    # Get dataloaders
+    train_loader, val_loader = get_dataloaders()
     
     # Initialize criterion and optimizer
     criterion = nn.CrossEntropyLoss()
