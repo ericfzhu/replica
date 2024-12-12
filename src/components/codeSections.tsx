@@ -1,6 +1,6 @@
 'use client';
 
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronRight } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import CodeDisplay from '@/components/codeDisplay';
