@@ -13,6 +13,8 @@ def train_one_epoch(model, criterion, optimizer, train_loader, device, epoch):
     running_loss = 0.0
     correct = 0
     total = 0
+
+    torch.cuda.empty_cache()
     
     pbar = tqdm(train_loader, desc=f'Epoch {epoch}')
     for i, (images, labels) in enumerate(pbar):
@@ -31,7 +33,8 @@ def train_one_epoch(model, criterion, optimizer, train_loader, device, epoch):
         
         pbar.set_postfix({
             'loss': running_loss/(i+1),
-            'acc': 100.*correct/total
+            'acc': 100.*correct/total,
+            'gpu_mem': f'{torch.cuda.memory_allocated()/1024**3:.1f}GB'
         })
     
     return running_loss/len(train_loader), 100.*correct/total
@@ -97,6 +100,7 @@ def main():
         print(f'\nEpoch {epoch+1}/{num_epochs}:')
         print(f'Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2f}%')
         print(f'Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.2f}%')
+        print(f'GPU Memory: {torch.cuda.memory_allocated()/1024**3:.1f}GB')
         
         # Save checkpoint
         if val_acc > best_acc:
@@ -109,6 +113,8 @@ def main():
                 'scheduler_state_dict': scheduler.state_dict(),
                 'best_acc': best_acc,
             }, save_dir / 'best_model.pth')
+
+        torch.cuda.empty_cache()
 
 if __name__ == '__main__':
     main()

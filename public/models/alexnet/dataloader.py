@@ -141,7 +141,7 @@ class ILSVRC2010Dataset(Dataset):
         return image, label
 
 
-def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=4):
+def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=256, num_workers=12):
     """
     Create and return training and validation dataloaders for ILSVRC2010.
     
@@ -201,7 +201,8 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=4):
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=True
+        pin_memory=True,
+        prefetch_factor=2
     )
 
     val_loader = DataLoader(
