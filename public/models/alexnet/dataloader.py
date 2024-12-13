@@ -154,7 +154,17 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=4):
         tuple: (train_loader, val_loader)
     """
     # Compute dataset statistics
-    mean, std = compute_mean_std(batch_size, num_workers)
+    stats_file = 'dataset_stats.txt'
+    if Path(stats_file).exists():
+        with open(stats_file, 'r') as f:
+            lines = f.readlines()
+            mean = torch.tensor(eval(lines[0].split(': ')[1]))
+            std = torch.tensor(eval(lines[1].split(': ')[1]))
+    else:
+        with open(stats_file, 'w') as f:
+            mean, std = compute_mean_std(batch_size, num_workers)
+            f.write(f'Mean: {mean.tolist()}\n')
+            f.write(f'Std: {std.tolist()}\n')
 
     # Define transforms
     train_transform = transforms.Compose([
