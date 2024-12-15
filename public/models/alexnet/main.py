@@ -104,7 +104,7 @@ def main():
     num_epochs = 90
     best_acc = 0.0
     batch_size = 256
-    base_lr = 0.1
+    base_lr = 0.01
 
     # Get dataloaders
     train_loader, val_loader = get_dataloaders(batch_size=batch_size, num_workers=12)
