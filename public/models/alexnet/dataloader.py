@@ -7,6 +7,7 @@ import glob
 from PIL import Image
 from torchvision import transforms
 import torch
+import random
 
 def compute_mean_std(batch_size=128, num_workers=4):
     transform = transforms.Compose([
@@ -59,89 +60,119 @@ class ILSVRC2010Dataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self.split = split
-
+        
+        # Load meta data
         meta = sio.loadmat(Path(root_dir, 'devkit', 'data', 'meta.mat'))
         self.synsets = meta['synsets']
-
+        
+        # Create WNID to label mapping
+        self.wnid_to_label = {}
+        for i in range(1000):  # Only first 1000 are competition classes
+            synset = self.synsets[i]
+            wnid = str(synset['WNID'][0][0])
+            ilsvrc_id = int(synset['ILSVRC2010_ID'][0][0]) - 1  # Convert to 0-based index
+            self.wnid_to_label[wnid] = ilsvrc_id
+            
+        print(f"Created mapping for {len(self.wnid_to_label)} WNIDs")
+        
         if split == 'train':
             self.image_dir = Path(root_dir, 'train')
-
-            self.tar_files = []
-            self.labels = []
-            for i in range(1000):  # 1000 classes
-                synset = self.synsets[i]
-                wnid = str(synset['WNID'][0][0])
-                tar_path = Path(self.image_dir, f"{wnid}.tar")
-                if tar_path.exists():
-                    self.tar_files.append(tar_path)
-                    self.labels.append(i)
-
             self.cache_dir = Path(root_dir, 'train_cache')
-            self.cache_dir.mkdir(parents=True, exist_ok=True)
-
+            
             self.images = []
-            self.image_labels = []  # Changed from self.labels to self.image_labels for consistency
-
-            print(f'Found {len(self.tar_files)} tar files')
-            print('Extracting training images...')
-            for tar_file, label in tqdm(zip(self.tar_files, self.labels), total=len(self.tar_files)):
-                synset_id = tar_file.stem
-                cache_dir = Path(self.cache_dir, synset_id)
-
-                if not cache_dir.exists():
-                    cache_dir.mkdir(parents=True, exist_ok=True)
-                    with tarfile.open(tar_file, 'r') as tar:
-                        tar.extractall(path=cache_dir)
+            self.image_labels = []
+            
+            # Get all JPEG files from cache
+            for wnid in self.wnid_to_label.keys():
+                cache_subdir = self.cache_dir / wnid
+                if cache_subdir.exists():
+                    synset_images = list(cache_subdir.glob('*.JPEG'))
+                    if synset_images:
+                        self.images.extend(synset_images)
+                        label = self.wnid_to_label[wnid]
+                        self.image_labels.extend([label] * len(synset_images))
+                    
+            print(f"Found {len(self.images)} training images")
+            print(f"Label range: min={min(self.image_labels)}, max={max(self.image_labels)}")
+            print(f"Number of unique labels: {len(set(self.image_labels))}")
+            
+            # Print a few samples
+            import random
+            for i in range(5):
+                idx = random.randint(0, len(self.images)-1)
+                img_path = self.images[idx]
+                label = self.image_labels[idx]
+                wnid = img_path.parent.name
+                print(f"Sample {i}: WNID={wnid}, Label={label}")
                 
-                synset_images = glob.glob(str(cache_dir / '*.JPEG'))
-                if synset_images:  # Only add if we found images
-                    self.images.extend(synset_images)
-                    self.image_labels.extend([label] * len(synset_images))
-                else:
-                    print(f"Warning: No images found in {cache_dir}")
-
         elif split == 'val':
             self.image_dir = Path(root_dir, 'val')
-
-            val_dir = Path(root_dir, 'val')
-            val_images_dir = Path(val_dir, 'val')
-            if val_images_dir.exists():
-                for img in val_images_dir.rglob('*.JPEG'):
-                    img.rename(val_dir / img.name)
-                val_images_dir.rmdir()
-
-            with open(Path(root_dir, 'devkit', 'data', 'ILSVRC2010_validation_ground_truth.txt'), 'r') as f:
+            
+            # Load validation ground truth
+            gt_path = Path(root_dir, 'devkit', 'data', 'ILSVRC2010_validation_ground_truth.txt')
+            with open(gt_path, 'r') as f:
+                # Val labels are 1-based in file, convert to 0-based
                 self.val_labels = [int(line.strip()) - 1 for line in f]
             
-            self.images = sorted(glob.glob(str(val_dir / '*.JPEG')))
+            self.images = sorted(list(self.image_dir.glob('*.JPEG')))
             self.image_labels = self.val_labels
             
-        # Add debug information
-        print(f"Dataset initialized with {len(self.images)} images for {split} split")
-
+            print(f"Found {len(self.images)} validation images")
+            print(f"Val label range: min={min(self.image_labels)}, max={max(self.image_labels)}")
+            
     def __len__(self):
         return len(self.images)
     
     def __getitem__(self, idx):
-        image_path = self.images[idx]
         try:
-            image = Image.open(image_path).convert('RGB')
+            # Open image while ignoring EXIF data
+            with Image.open(self.images[idx]) as img:
+                # Force RGB without EXIF
+                image = Image.new('RGB', img.size)
+                image.paste(img)
+            label = self.image_labels[idx]
+            
+            if self.transform:
+                image = self.transform(image)
+            
+            return image, torch.tensor(label, dtype=torch.long)
         except Exception as e:
-            print(f'Error loading image {image_path}: {e}')
-            return self.__getitem__(idx + 1)
+            print(f"Error loading image {self.images[idx]}: {e}")
+            new_idx = (idx + 1) % len(self)
+            return self.__getitem__(new_idx)
+
+class ColorAugmentation:
+    def __init__(self, alphastd=0.1):
+        self.alphastd = alphastd
+
+    def __call__(self, img):
+        if not isinstance(img, torch.Tensor):
+            img = transforms.ToTensor()(img)
         
-        label = self.image_labels[idx]
+        # Convert to float32 for numerical stability
+        img = img.float()
+        
+        # Reshape image to get pixels as rows
+        pixels = img.reshape(-1, 3)
+        
+        # Calculate covariance matrix and eigenvectors
+        cov = torch.mm(pixels.T, pixels) / pixels.shape[0]
+        eigvals, eigvecs = torch.linalg.eigh(cov)
+        
+        # Generate random weights for eigenvectors
+        alpha = torch.randn(3) * self.alphastd
+        
+        # Calculate the color perturbation
+        perturbation = torch.mm(eigvecs, (eigvals.sqrt() * alpha).unsqueeze(1))
+        perturbation = perturbation.view(3, 1, 1)
+        
+        # Apply the perturbation
+        img = img + perturbation
+        
+        # Clamp values to valid range
+        return img.clamp_(0, 1)
 
-        if self.transform:
-            image = self.transform(image)
-
-        # Convert label to torch tensor
-        label = torch.tensor(label, dtype=torch.long)
-
-        return image, label
-
-
-def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=256, num_workers=12):
+def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=512, num_workers=8):
     """
     Create and return training and validation dataloaders for ILSVRC2010.
     
@@ -154,32 +185,21 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=256, num_workers=12):
         tuple: (train_loader, val_loader)
     """
     # Compute dataset statistics
-    stats_file = 'dataset_stats.txt'
-    if Path(stats_file).exists():
-        with open(stats_file, 'r') as f:
-            lines = f.readlines()
-            mean = torch.tensor(eval(lines[0].split(': ')[1]))
-            std = torch.tensor(eval(lines[1].split(': ')[1]))
-    else:
-        with open(stats_file, 'w') as f:
-            mean, std = compute_mean_std(batch_size, num_workers)
-            f.write(f'Mean: {mean.tolist()}\n')
-            f.write(f'Std: {std.tolist()}\n')
+    mean = [0.49095413088798523, 0.4655124545097351, 0.4093688428401947]
+    std = [0.2894245386123657, 0.281748503446579, 0.3004192113876343]
 
-    # Define transforms
     train_transform = transforms.Compose([
-        transforms.Resize((256, 256)),  # Fixed size for both dimensions
-        transforms.RandomCrop(224),
+        transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+        transforms.Normalize(mean=mean, std=std)
     ])
 
     val_transform = transforms.Compose([
-        transforms.Resize((256, 256)),  # Fixed size for both dimensions
+        transforms.Resize((256, 256)),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean.tolist(), std=std.tolist())
+        transforms.Normalize(mean=mean, std=std)
     ])
 
     # Create datasets
@@ -202,6 +222,7 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=256, num_workers=12):
         shuffle=True,
         num_workers=num_workers,
         pin_memory=True,
+        persistent_workers=True,
         prefetch_factor=2
     )
 
@@ -210,6 +231,7 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=256, num_workers=12):
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
+        persistent_workers=True,
         pin_memory=True
     )
 

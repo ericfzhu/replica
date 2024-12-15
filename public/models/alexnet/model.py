@@ -63,13 +63,11 @@ class AlexNet(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.normal_(m.weight, mean=0, std=0.01)
+                # Use Kaiming initialization for ReLU networks
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
-                    if m in (self.conv2[0], self.conv4[0], self.conv5[0]):
-                        nn.init.constant_(m.bias, 1)
-                    else:
-                        nn.init.constant_(m.bias, 0)
-            
+                    nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
-                nn.init.normal_(m.weight, mean=0, std=0.01)
-                nn.init.constant_(m.bias, 1)
+                # Use smaller std for linear layers
+                nn.init.normal_(m.weight, mean=0, std=0.1)
+                nn.init.constant_(m.bias, 0)

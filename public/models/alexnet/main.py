@@ -7,57 +7,83 @@ from tqdm import tqdm
 
 from model import AlexNet
 from dataloader import get_dataloaders
+from torch.amp import autocast, GradScaler
 
 def train_one_epoch(model, criterion, optimizer, train_loader, device, epoch):
     model.train()
-    running_loss = 0.0
-    correct = 0
-    total = 0
 
-    torch.cuda.empty_cache()
+    batch_size = train_loader.batch_size
+    num_batches = len(train_loader)
+    running_loss = torch.zeros(1, device=device)
+    correct = torch.zeros(1, device=device)
+    total = 0
     
+    scaler = GradScaler(
+        init_scale=2**10,
+        growth_factor=2,
+        backoff_factor=0.5,
+        growth_interval=100
+    )
+
     pbar = tqdm(train_loader, desc=f'Epoch {epoch}')
     for i, (images, labels) in enumerate(pbar):
-        images, labels = images.to(device), labels.to(device)
-        
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        
-        running_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += labels.size(0)
-        correct += predicted.eq(labels).sum().item()
-        
-        pbar.set_postfix({
-            'loss': running_loss/(i+1),
-            'acc': 100.*correct/total,
-            'gpu_mem': f'{torch.cuda.memory_allocated()/1024**3:.1f}GB'
-        })
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+            
+            optimizer.zero_grad(set_to_none=True)
+            
+            with autocast(device.type):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+            
+            if torch.isfinite(loss):
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
+                scaler.step(optimizer)
+                scaler.update()
+                
+                with torch.no_grad():
+                    running_loss += loss
+                    correct += (outputs.argmax(1) == labels).sum()
+                    total += labels.size(0)
+            
+            if i % 50 == 0:  # Update less frequently
+                pbar.set_postfix({
+                    'loss': (running_loss.item()/(i+1)),
+                    'acc': 100.*correct.item()/total,
+                    'lr': f'{optimizer.param_groups[0]["lr"]:.6f}',
+                    'gpu_mem': f'{torch.cuda.memory_allocated()/1024**3:.1f}GB'
+                })
+                
+    avg_loss = running_loss.item() / num_batches
+    accuracy = 100. * correct.item() / total
     
-    return running_loss/len(train_loader), 100.*correct/total
+    return avg_loss, accuracy
 
 def validate(model, criterion, val_loader, device):
     model.eval()
-    running_loss = 0.0
-    correct = 0
+    running_loss = torch.zeros(1, device=device)
+    correct = torch.zeros(1, device=device)
     total = 0
     
     with torch.no_grad():
         for images, labels in tqdm(val_loader, desc='Validation'):
-            images, labels = images.to(device), labels.to(device)
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
             
             outputs = model(images)
             loss = criterion(outputs, labels)
             
-            running_loss += loss.item()
-            _, predicted = outputs.max(1)
+            running_loss += loss
+            correct += (outputs.argmax(1) == labels).sum()
             total += labels.size(0)
-            correct += predicted.eq(labels).sum().item()
     
-    return running_loss/len(val_loader), 100.*correct/total
+    # Convert tensor values to floats before returning
+    avg_loss = running_loss.item() / len(val_loader)
+    accuracy = 100. * correct.item() / total
+    
+    return avg_loss, accuracy
 
 def main():
     # Set device
@@ -72,28 +98,33 @@ def main():
     model = AlexNet(num_classes=1000)
     model = model.to(device)
 
-    # Get dataloaders
-    train_loader, val_loader = get_dataloaders()
-    
-    # Initialize criterion and optimizer
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-    scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
-    
+    torch.cuda.empty_cache()
+
     # Training parameters
     num_epochs = 90
     best_acc = 0.0
+    batch_size = 256
+    base_lr = 0.1
+
+    # Get dataloaders
+    train_loader, val_loader = get_dataloaders(batch_size=batch_size, num_workers=12)
+    
+    criterion = nn.CrossEntropyLoss().to(device)
+
+    optimizer = optim.SGD(
+        model.parameters(),
+        lr=base_lr * (batch_size/128),
+        momentum=0.9,
+        weight_decay=0.0005
+    )
+    scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
     
     # Training loop
     for epoch in range(num_epochs):
-        # Train for one epoch
-        train_loss, train_acc = train_one_epoch(
-            model, criterion, optimizer, train_loader, device, epoch)
+        train_loss, train_acc = train_one_epoch(model, criterion, optimizer, train_loader, device, epoch)
         
-        # Validate
         val_loss, val_acc = validate(model, criterion, val_loader, device)
         
-        # Update learning rate
         scheduler.step()
         
         # Print statistics
