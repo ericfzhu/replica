@@ -117,7 +117,7 @@ class ILSVRC2010Dataset(Dataset):
 
 class PCAColorAugmentation:
     """
-    PCA Color augmentation as described in AlexNet paper.
+    PCA Color augmentation as described in the AlexNet paper.
     Pre-computes PCA on a subset of training data for efficiency.
     """
     def __init__(self, dataloader: Optional[DataLoader] = None, alphastd: float = 0.1):
@@ -139,20 +139,29 @@ class PCAColorAugmentation:
             if samples_processed >= max_samples:
                 break
             # Reshape to pixels x channels
-            pixels.append(images.reshape(-1, 3))
-            samples_processed += images.size(0)
+            batch_size = images.size(0)
+            images = images.permute(0, 2, 3, 1).reshape(-1, 3)
+            pixels.append(images)
+            samples_processed += batch_size
             
-        pixels = torch.cat(pixels, 0)
+        pixels = torch.cat(pixels, dim=0)
         
         # Center the pixel values
         mean = pixels.mean(dim=0, keepdim=True)
         pixels_centered = pixels - mean
         
         # Compute covariance matrix
-        cov = torch.mm(pixels_centered.t(), pixels_centered) / (pixels.size(0) - 1)
+        cov = torch.mm(pixels_centered.t(), pixels_centered) / (pixels_centered.size(0) - 1)
         
         # Compute eigenvectors and eigenvalues
-        self.eigval, self.eigvec = torch.linalg.eigh(cov)
+        eigval, eigvec = torch.linalg.eigh(cov)
+        
+        # Reverse to descending order
+        eigval = eigval.flip(0)
+        eigvec = eigvec.flip(1)
+        
+        self.eigval = eigval
+        self.eigvec = eigvec
         
         print("PCA computation completed.")
 
@@ -160,22 +169,24 @@ class PCAColorAugmentation:
         """
         Apply PCA color augmentation to an image.
         Args:
-            img: Normalized tensor image [3,H,W]
+            img: Tensor image [C,H,W]
         Returns:
-            Augmented tensor image [3,H,W]
+            Augmented tensor image [C,H,W]
         """
         if self.eigval is None or self.eigvec is None:
             return img
-            
+        
         # Generate random weights
-        alpha = torch.randn(3) * self.alphastd
+        alpha = torch.randn(3, device=img.device) * self.alphastd
         
         # Calculate the color perturbation
-        perturbation = torch.mm(self.eigvec, (self.eigval.sqrt() * alpha).unsqueeze(1))
-        perturbation = perturbation.view(3, 1, 1)
+        rgb = (self.eigvec * alpha.unsqueeze(0)) @ self.eigval.unsqueeze(1)
+        perturbation = rgb.view(3, 1, 1)
         
         # Apply perturbation
-        return img + perturbation
+        img_aug = img + perturbation.float()
+        
+        return img_aug
     
 class TenCropWrapper:
     """
@@ -195,9 +206,9 @@ class TenCropWrapper:
         return self.transform(img)
 
 def get_transforms(color_augmentation: Optional[PCAColorAugmentation] = None, 
-                  is_training: bool = True,
-                  mean: Tuple[float, float, float] = (0.485, 0.456, 0.406),
-                  std: Tuple[float, float, float] = (0.229, 0.224, 0.225)) -> transforms.Compose:
+                   is_training: bool = True,
+                   mean: Tuple[float, float, float] = (0.485, 0.456, 0.406),
+                   std: Tuple[float, float, float] = (0.229, 0.224, 0.225)) -> transforms.Compose:
     """
     Get transforms for training or validation.
     """
@@ -205,11 +216,12 @@ def get_transforms(color_augmentation: Optional[PCAColorAugmentation] = None,
         transform_list = [
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std)
+            transforms.ToTensor()
         ]
         if color_augmentation is not None:
             transform_list.append(color_augmentation)
+        # Normalization should be the last step
+        transform_list.append(transforms.Normalize(mean=mean, std=std))
         return transforms.Compose(transform_list)
     else:
         return TenCropWrapper(mean=mean, std=std)
@@ -226,7 +238,7 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=8):
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std)
+        transforms.Normalize(mean=mean, std=std),
     ])
 
     val_transform = transforms.Compose([

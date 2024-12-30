@@ -6,7 +6,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from model import AlexNet
-from dataloader import get_dataloaders
+from dataloader import get_dataloaders, PCAColorAugmentation, get_transforms
 from torch.amp import autocast, GradScaler
 
 def train_one_epoch(model, criterion, optimizer, train_loader, device, epoch, scaler):
@@ -96,12 +96,31 @@ def main():
     
     # Initialize gradient scaler
     scaler = GradScaler()
+
+    train_loader, _ = get_dataloaders(
+        root_dir='data/ILSVRC2010',
+        batch_size=128,
+        num_workers=12
+    )
+
+    # Compute PCA using a subset of the training data
+    color_augmentation = PCAColorAugmentation(dataloader=train_loader)
+
+    # Now get the transforms including PCAColorAugmentation
+    train_transform = get_transforms(
+        color_augmentation=color_augmentation, 
+        is_training=True,
+        mean=[0.485, 0.456, 0.406], 
+        std=[0.229, 0.224, 0.225]
+    )
     
     # Get dataloaders
     train_loader, val_loader = get_dataloaders(
         batch_size=batch_size,
         num_workers=12
     )
+
+    train_loader.dataset.transform = train_transform
     
     print(f"\nDataset sizes:")
     print(f"Training: {len(train_loader.dataset)} images")
