@@ -19,3 +19,8 @@ Waiting for datasets to be downloaded. Will be trained on the [ILSVRC 2010](http
 ## Results
 
 WIP
+Epoch 90 Summary:
+Train - Loss: 3.0638, Acc: 36.85%
+Val - Loss: 2.6418, Acc: 43.31%
+Learning rate: 0.000100
+GPU Memory: 0.7GB
