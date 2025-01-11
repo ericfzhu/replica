@@ -229,26 +229,49 @@ def get_transforms(color_augmentation: Optional[PCAColorAugmentation] = None,
 def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=8):
     """
     Create and return training and validation dataloaders for ILSVRC2010.
-    Simplified and optimized version.
+    Now includes PCA color augmentation and 10-crop validation.
     """
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]
 
+    # Create a simple transform to compute PCA
+    initial_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor()
+    ])
+
+    # Create initial dataset for PCA computation
+    initial_dataset = ILSVRC2010Dataset(
+        root_dir=root_dir,
+        split='train',
+        transform=initial_transform
+    )
+    
+    initial_loader = DataLoader(
+        initial_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+
+    # Create and compute PCA color augmentation
+    color_augmentation = PCAColorAugmentation(initial_loader)
+
+    # Training transforms with PCA color augmentation
     train_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=std),
-    ])
-
-    val_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
+        color_augmentation,
         transforms.Normalize(mean=mean, std=std)
     ])
 
-    # Create datasets
+    # Validation transforms with 10-crop
+    val_transform = TenCropWrapper(mean=mean, std=std)
+
+    # Create datasets with final transforms
     train_dataset = ILSVRC2010Dataset(
         root_dir=root_dir,
         split='train',
@@ -261,7 +284,6 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=8):
         transform=val_transform
     )
 
-    # Create dataloaders with basic optimizations
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -273,7 +295,7 @@ def get_dataloaders(root_dir='data/ILSVRC2010', batch_size=128, num_workers=8):
 
     val_loader = DataLoader(
         val_dataset,
-        batch_size=batch_size,
+        batch_size=batch_size // 10,
         shuffle=False,
         num_workers=num_workers,
         pin_memory=True
