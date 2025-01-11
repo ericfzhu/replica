@@ -13,14 +13,18 @@ Reponse normalization layers follow the first and second convolutional layers, a
 ![Model diagram](models/alexnet/image1.jpg)
 
 ## Training
-Waiting for datasets to be downloaded. Will be trained on the [ILSVRC 2010](https://www.image-net.org/challenges/LSVRC/2010/index.php) dataset for object classification and  [ILSVRC 2012](https://www.image-net.org/challenges/LSVRC/2012/index.php) dataset for object localization and object detection.
+This model was trained using single GPU (3070) rather than the original paper's dual GTX 580 setup on the [ILSVRC 2010](https://www.image-net.org/challenges/LSVRC/2010/index.php) dataset for object classification. Modern GPU architecture eliminates the need for the original paper's custom GPU memory management and model splitting.
+
+Epoch 90:
+- Train - Loss: 3.0638, Acc: 36.85%
+- Val - Loss: 2.6418, Acc: 43.31%
+- Learning rate: 0.000100
+- GPU Memory: 0.7GB
 
 
 ## Results
+The current implementation shows significantly lower top-1 performance compared to the original paper: 43.31% validation accuracy (56.69% error rate) vs. 62.5% accuracy (37.5% error rate). I have several guesses as to why there's a ~19% accuracy gap:
 
-WIP
-Epoch 90 Summary:
-Train - Loss: 3.0638, Acc: 36.85%
-Val - Loss: 2.6418, Acc: 43.31%
-Learning rate: 0.000100
-GPU Memory: 0.7GB
+- Usage of a single GPU, whereas the dual-GPUs may have acted as an ensemble of models to learn the different features of the dataset
+- Original implementation used 10-crop evaluation at test time which typically provides 1-2% improvement
+- Poor RNG for the initialisation of the weights

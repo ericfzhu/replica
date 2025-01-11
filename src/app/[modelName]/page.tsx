@@ -18,6 +18,7 @@ interface Metadata {
 	title: string;
 	authors: string;
 	link: string;
+	model?: string;
 }
 
 export default function ModelPage({ params }: PageProps) {
@@ -65,10 +66,20 @@ export default function ModelPage({ params }: PageProps) {
 					Abstract
 					<IconArrowUpRight />
 				</Link>
-				<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
-					Model
-					<IconArrowUpRight />
-				</span>
+				{metadata.model ? (
+					<Link
+						href={metadata.model}
+						className="text-[#4647F1] text-sm flex items-center hover:border-[#4647F1] border-transparent border-b-[1px] w-fit gap-2"
+						target="_blank">
+						Model
+						<IconArrowUpRight />
+					</Link>
+				) : (
+					<span className="text-sm rounded-md text-gray-500 cursor-not-allowed flex items-center gap-2">
+						Model
+						<IconArrowUpRight />
+					</span>
+				)}
 			</div>
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 				<CodeSections modelCode={modelCode} mainCode={mainCode} dataloaderCode={dataloaderCode} modelName={params.modelName} />
