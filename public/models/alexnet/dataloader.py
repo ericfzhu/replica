@@ -193,17 +193,31 @@ class TenCropWrapper:
     Wrapper for validation that performs 10-crop evaluation as in the AlexNet paper.
     """
     def __init__(self, mean, std):
-        self.transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.TenCrop(224),
-            transforms.Lambda(lambda crops: torch.stack([
-                transforms.Normalize(mean=mean, std=std)(transforms.ToTensor()(crop))
-                for crop in crops
-            ]))
-        ])
+        self.mean = mean
+        self.std = std
+
+    def _normalize_tensor(self, tensor):
+        """Helper method to normalize a tensor using mean and std"""
+        for t, m, s in zip(tensor, self.mean, self.std):
+            t.sub_(m).div_(s)
+        return tensor
     
     def __call__(self, img):
-        return self.transform(img)
+        # First resize the image to 256x256
+        resize_transform = transforms.Resize(256)
+        img = resize_transform(img)
+        
+        # Get all 10 crops
+        crops = transforms.TenCrop(224)(img)
+        
+        # Convert to tensors and normalize
+        result = []
+        for crop in crops:
+            tensor = transforms.ToTensor()(crop)
+            tensor = self._normalize_tensor(tensor.clone())
+            result.append(tensor)
+            
+        return torch.stack(result)
 
 def get_transforms(color_augmentation: Optional[PCAColorAugmentation] = None, 
                    is_training: bool = True,

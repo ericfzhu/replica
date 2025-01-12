@@ -55,19 +55,21 @@ def validate(model, criterion, val_loader, device):
     
     with torch.no_grad():
         for images, labels in tqdm(val_loader, desc='Validation'):
-            # images is now a 5D tensor: batch_size x 10 crops x channels x height x width
-            batch_size = images.size(0)
-            n_crops = images.size(1)
+            # images shape should be [batch_size, n_crops, channels, height, width]
+            if len(images.shape) < 5:
+                images = images.unsqueeze(0)
+            
+            batch_size, n_crops = images.shape[:2]
             
             # Reshape images to process all crops at once
-            images = images.view(-1, images.size(2), images.size(3), images.size(4))
+            images = images.view(-1, *images.shape[2:])  # [batch_size * n_crops, channels, height, width]
             images = images.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
             
             # Forward pass
             outputs = model(images)
             
-            # Reshape outputs to average over crops
+            # Average predictions across the crops
             outputs = outputs.view(batch_size, n_crops, -1)
             outputs = outputs.mean(1)  # Average over crops
             
