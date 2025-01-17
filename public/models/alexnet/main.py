@@ -104,7 +104,7 @@ def main():
     torch.cuda.empty_cache()
     
     # Training parameters
-    num_epochs = 90
+    num_epochs = 200
     batch_size = 128 * max(2, torch.cuda.device_count())
     base_lr = 0.01
     
@@ -153,12 +153,10 @@ def main():
     )
     
     # Learning rate scheduler
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler = optim.lr_scheduler.StepLR(
         optimizer,
-        mode='max',
-        factor=0.1,
-        patience=5,
-        verbose=True
+        step_size=30,
+        gamma=0.1
     )
     
     # Training loop

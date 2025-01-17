@@ -54,15 +54,19 @@ class AlexNet(nn.Module):
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                # Initialize conv layers with random normal distribution
                 nn.init.normal_(m.weight, mean=0, std=0.01)
                 if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+                    # Set bias to 1 for 2nd, 4th, and 5th conv layers
+                    layer_name = m._get_name()
+                    if 'conv2' in layer_name or 'conv4' in layer_name or 'conv5' in layer_name:
+                        nn.init.constant_(m.bias, 1)
+                    else:
+                        nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
-                # Initialize first two FC layers with gaussian 0.005
-                if m.out_features != 1000:
-                    nn.init.normal_(m.weight, mean=0, std=0.005)
-                else:
-                    # Last layer uses gaussian 0.01
-                    nn.init.normal_(m.weight, mean=0, std=0.01)
-                nn.init.constant_(m.bias, 0)
+                # Use same initialization for all layers
+                nn.init.normal_(m.weight, mean=0, std=0.01)
+                # Set bias to 1 for hidden layers, 0 for output layer
+                if m.out_features != 1000:  # Hidden layer
+                    nn.init.constant_(m.bias, 1)
+                else:  # Output layer
+                    nn.init.constant_(m.bias, 0)
